@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+  .toolbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .toolbar .spacer { flex:1; }
+  .toolbar .right { display:flex; gap:8px; }
+  .row-actions { display:flex; gap:8px; justify-content:flex-start; }
+  .row-actions .btn { min-width:64px; text-align:center; }
+</style>
+
+<div class="card">
+  <h2 class="card__title">🚚 Xe vận chuyển</h2>
+
+  <!-- Thanh công cụ -->
+  <form method="get" class="toolbar">
+    <input class="input" type="text" name="q" value="{{ q or '' }}" placeholder="Tìm theo mã / biển số / tài xế…">
+    <button class="btn small">Tìm</button>
+
+    <div class="spacer"></div>
+
+    <div class="right">
+      <a class="btn small" href="{{ url_for('xe_create') }}">Thêm xe</a>
+    </div>
+  </form>
+
+  <div class="table-wrapper" style="margin-top:8px;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Mã xe</th>
+          <th>Biển số</th>
+          <th>Tài xế</th>
+          <th>SĐT</th>
+          <th style="width:160px;">&nbsp;</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td>{{ r.id_xe_van_chuyen }}</td>
+          <td>{{ r.bien_so }}</td>
+          <td>{{ (r.ho or '') ~ ' ' ~ (r.ten_dem or '') ~ ' ' ~ (r.ten or '') }}</td>
+          <td>{{ r.so_dien_thoai_tai_xe or '—' }}</td>
+          <td>
+            <div class="row-actions">
+              <a class="btn small ghost" href="{{ url_for('xe_edit', id=r.id_xe_van_chuyen) }}">Sửa</a>
+              <form method="post" action="{{ url_for('xe_delete', id=r.id_xe_van_chuyen) }}"
+                    onsubmit="return confirm('Xóa xe {{ r.bien_so }}?');">
+                <button class="btn small danger" type="submit">Xóa</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+        {% if not rows %}
+        <tr><td colspan="5" style="text-align:center;opacity:.7;">Không có dữ liệu</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

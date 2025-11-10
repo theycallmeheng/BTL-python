@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="card">
+  <h2 class="card__title">📤 Xuất kho</h2>
+
+  <h3 style="margin-bottom:8px; color:#2563eb;">Thông tin phiếu xuất</h3>
+
+  <!-- ====== FORM LẬP PHIẾU XUẤT ====== -->
+  <form method="post" class="form-grid"
+        style="max-width:650px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+
+    <div style="grid-column:span 2;">
+      <label>ID hóa đơn</label>
+      <input class="input" name="id_hd" value="{{ next_id_hd }}" readonly>
+    </div>
+
+    <div style="grid-column:span 2;">
+      <label>Kho</label>
+      <select class="input" name="id_kho" required {% if IS_STAFF %}disabled{% endif %}>
+        <option value="">-- Chọn kho --</option>
+        {% for k in khos %}
+          <option value="{{ k.id_kho }}" {{ 'selected' if selected_kho==k.id_kho else '' }}>
+            {{ k.id_kho }} - {{ k.ten_kho }}
+          </option>
+        {% endfor %}
+      </select>
+      {% if IS_STAFF %}
+        <!-- staff: ép kho = assigned_kho -->
+        <input type="hidden" name="id_kho" value="{{ selected_kho }}">
+      {% endif %}
+    </div>
+
+    <div style="grid-column:span 2;">
+      <label>Sản phẩm</label>
+      <select class="input" name="id_sp" required>
+        <option value="">-- Chọn sản phẩm --</option>
+        {% for sp in sps %}
+          <option value="{{ sp.id_san_pham }}">{{ sp.id_san_pham }} - {{ sp.ten_san_pham }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label>Số lượng xuất</label>
+      <input class="input" name="so_luong" type="number" min="1" placeholder="Nhập số lượng..." required>
+    </div>
+
+    <div>
+      <label>Giá bán</label>
+      <input class="input" name="gia_ban" type="number" step="0.01" placeholder="Nhập giá bán..." required>
+    </div>
+
+    <div style="grid-column:span 2;">
+      <label>Ngày xuất</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input class="input" name="ngay" id="ngayXuat" type="datetime-local" style="flex:1;" required>
+        <button type="button" class="btn small ghost" onclick="layThoiGianXuat()">🕒 Lấy thời gian</button>
+      </div>
+    </div>
+
+    <div>
+      <label>Nhân viên</label>
+      {% if IS_STAFF %}
+        <select class="input" disabled>
+          <option selected>{{ staff_nv_label }}</option>
+        </select>
+        <!-- server tự map username->mã NV; hidden để hợp lệ form -->
+        <input type="hidden" name="id_nv" value="">
+      {% else %}
+        <select class="input" name="id_nv" required>
+          <option value="">-- Chọn nhân viên --</option>
+          {% for nv in nvs %}
+            {% set ten_nv = ((nv.ho or '') ~ ' ' ~ (nv.ten_dem or '') ~ ' ' ~ (nv.ten or '')) | trim %}
+            <option value="{{ nv.id_nhan_vien }}">{{ nv.id_nhan_vien }} - {{ ten_nv or 'NV không tên' }}</option>
+          {% endfor %}
+        </select>
+      {% endif %}
+    </div>
+
+    <div>
+      <label>Xe vận chuyển</label>
+      <select class="input" name="id_xe" required>
+        <option value="">-- Chọn xe --</option>
+        {% for xe in xes %}
+          {% set tai_xe = ((xe.ho or '') ~ ' ' ~ (xe.ten_dem or '') ~ ' ' ~ (xe.ten or '')) | trim %}
+          <option value="{{ xe.id_xe_van_chuyen }}">{{ xe.id_xe_van_chuyen }} - {{ xe.bien_so }} - {{ tai_xe or 'Tài xế' }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="grid-column:span 2;">
+      <label>Khách hàng</label>
+      <select class="input" name="id_kh" required>
+        <option value="">-- Chọn khách hàng --</option>
+        {% for kh in khs %}
+          {% set ten_kh = ((kh.ho or '') ~ ' ' ~ (kh.ten_dem or '') ~ ' ' ~ (kh.ten or '')) | trim %}
+          <option value="{{ kh.id_khach_hang }}">{{ kh.id_khach_hang }} - {{ ten_kh or 'KH không tên' }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="grid-column:span 2; text-align:left; margin-top:10px;">
+      <button class="btn">✅ Lưu phiếu xuất</button>
+    </div>
+  </form>
+</div>
+
+<!-- ====== CARD: BỘ LỌC LỊCH SỬ ====== -->
+<section class="card" style="margin-top:12px;">
+  <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+    <div style="font-size:22px;">🔎</div>
+    <h3 style="margin:0;">Bộ lọc</h3>
+  </div>
+
+  <form method="get" class="filter-row">
+    {% if IS_STAFF %}
+      <!-- Staff chỉ lọc Xe & Khách; kho bị khóa = assigned_kho -->
+      <label>Xe VC</label>
+      <select class="input" name="f_xe">
+        <option value="">-- Tất cả --</option>
+        {% for xe in xes %}
+          {% set tai_xe = ((xe.ho or '') ~ ' ' ~ (xe.ten_dem or '') ~ ' ' ~ (xe.ten or '')) | trim %}
+          <option value="{{ xe.id_xe_van_chuyen }}" {{ 'selected' if f_xe==xe.id_xe_van_chuyen else '' }}>
+            {{ xe.id_xe_van_chuyen }} - {{ xe.bien_so }} - {{ tai_xe or 'Tài xế' }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <label>Khách hàng</label>
+      <select class="input" name="f_kh">
+        <option value="">-- Tất cả --</option>
+        {% for kh in khs %}
+          {% set ten_kh = ((kh.ho or '') ~ ' ' ~ (kh.ten_dem or '') ~ ' ' ~ (kh.ten or '')) | trim %}
+          <option value="{{ kh.id_khach_hang }}" {{ 'selected' if f_kh==kh.id_khach_hang else '' }}>
+            {{ kh.id_khach_hang }} - {{ ten_kh or 'KH không tên' }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <!-- ép kho bằng hidden -->
+      <input type="hidden" name="f_kho" value="{{ selected_kho }}">
+
+    {% else %}
+      <!-- Admin: đủ 4 bộ lọc NV/Xe/KH/Kho -->
+      <label>Nhân viên</label>
+      <select class="input" name="f_nv">
+        <option value="">-- Tất cả --</option>
+        {% for nv in nvs %}
+          {% set ten_nv = ((nv.ho or '') ~ ' ' ~ (nv.ten_dem or '') ~ ' ' ~ (nv.ten or '')) | trim %}
+          <option value="{{ nv.id_nhan_vien }}" {{ 'selected' if f_nv==nv.id_nhan_vien else '' }}>
+            {{ nv.id_nhan_vien }} - {{ ten_nv or 'NV không tên' }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <label>Xe VC</label>
+      <select class="input" name="f_xe">
+        <option value="">-- Tất cả --</option>
+        {% for xe in xes %}
+          {% set tai_xe = ((xe.ho or '') ~ ' ' ~ (xe.ten_dem or '') ~ ' ' ~ (xe.ten or '')) | trim %}
+          <option value="{{ xe.id_xe_van_chuyen }}" {{ 'selected' if f_xe==xe.id_xe_van_chuyen else '' }}>
+            {{ xe.id_xe_van_chuyen }} - {{ xe.bien_so }} - {{ tai_xe or 'Tài xế' }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <label>Khách hàng</label>
+      <select class="input" name="f_kh">
+        <option value="">-- Tất cả --</option>
+        {% for kh in khs %}
+          {% set ten_kh = ((kh.ho or '') ~ ' ' ~ (kh.ten_dem or '') ~ ' ' ~ (kh.ten or '')) | trim %}
+          <option value="{{ kh.id_khach_hang }}" {{ 'selected' if f_kh==kh.id_khach_hang else '' }}>
+            {{ kh.id_khach_hang }} - {{ ten_kh or 'KH không tên' }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <label>Kho</label>
+      <select class="input" name="f_kho">
+        <option value="ALL" {{ 'selected' if f_kho=='ALL' else '' }}>-- Tất cả --</option>
+        {% for k in khos %}
+          <option value="{{ k.id_kho }}" {{ 'selected' if f_kho==k.id_kho else '' }}>
+            {{ k.id_kho }} - {{ k.ten_kho }}
+          </option>
+        {% endfor %}
+      </select>
+    {% endif %}
+
+    <button class="btn small" type="submit">Lọc</button>
+    <a class="btn small ghost" href="{{ request.path }}">Xóa lọc</a>
+  </form>
+</section>
+
+<!-- ====== LỊCH SỬ ====== -->
+<div class="card" style="margin-top:16px;">
+  <h3 class="card__title">📜 Lịch sử xuất kho gần nhất</h3>
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Hóa đơn</th>
+          <th>Sản phẩm</th>
+          <th>Số lượng</th>
+          <th>Giá bán</th>
+          <th>Ngày xuất</th>
+          <th>Nhân viên</th>
+          <th>Xe VC</th>
+          <th>Khách hàng</th>
+          <th>Kho</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in items %}
+          <tr>
+            <td>{{ r.id_hoa_don_xuat }}</td>
+            <td>{{ r.id_san_pham }}</td>
+            <td>{{ r.so_san_pham_xuat }}</td>
+            <td>{{ '{:,.0f}'.format(r.gia_ban|float) }}</td>
+            <td>{{ r.ngay_xuat }}</td>
+            <td>{{ r.id_nhan_vien or '—' }}</td>
+            <td>{{ r.id_xe_van_chuyen }}</td>
+            <td>{{ r.id_khach_hang }}</td>
+            <td>{{ r.id_kho }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ====== STYLE CHO HÀNG LỌC ====== -->
+<style>
+  .filter-row{display:flex;gap:10px;align-items:center;flex-wrap:nowrap}
+  .filter-row label{white-space:nowrap;margin-right:4px}
+  .filter-row .input{min-width:170px}
+  @media (max-width: 1100px){.filter-row{flex-wrap:wrap}}
+</style>
+
+<script>
+  function layThoiGianXuat() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const h = String(now.getHours()).padStart(2, '0');
+    const min = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById("ngayXuat").value = `${y}-${m}-${d}T${h}:${min}`;
+  }
+</script>
+
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+  <h2 class="card__title">{{ 'Sửa' if item else 'Thêm' }} nhà cung cấp</h2>
+  <form method="post" class="form-grid">
+    <label>Mã nhà cung cấp</label>
+    <input class="input" name="id_nha_cung_cap" value="{{ item.id_nha_cung_cap if item else next_id }}" {{ 'readonly' if item else '' }} required>
+
+    <label>Tên nhà cung cấp</label>
+    <input class="input" name="ten_nha_cung_cap" value="{{ item.ten_nha_cung_cap if item else '' }}" required>
+
+    <label>Số điện thoại</label>
+    <input class="input" name="so_dien_thoai_nha_cung_cap" value="{{ item.so_dien_thoai_nha_cung_cap if item else '' }}">
+
+    <label>Địa điểm</label>
+    <select class="input" name="dia_diem">
+      <option value="">-- Không chọn --</option>
+      {% for d in dds %}
+        <option value="{{ d.id_dia_diem }}" {{ 'selected' if item and item.id_dia_chi==d.id_dia_diem else '' }}>
+          {{ d.id_dia_diem }} - {{ d.ten_dia_diem }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <div class="form-actions">
+      <button class="btn">{{ 'Lưu' if item else 'Tạo' }}</button>
+      <a class="btn ghost" href="{{ url_for('ncc_manage') }}">Hủy</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

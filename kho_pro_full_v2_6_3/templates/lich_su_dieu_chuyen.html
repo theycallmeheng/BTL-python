@@ -1,0 +1,137 @@
+<!--{% extends 'base.html' %}-->
+<!--{% block content %}-->
+
+<!--<div class="card">-->
+<!--  <h2 class="card__title">Xuất kho</h2>-->
+
+<!--  <h3 style="margin-bottom:8px; color:#2563eb;">Thông tin phiếu xuất</h3>-->
+
+<!--  <form method="post" class="form-grid" style="max-width:650px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">-->
+
+<!--    <div style="grid-column:span 2;">-->
+<!--      <label>ID hóa đơn</label>-->
+<!--      <input class="input" name="id_hd" value="{{ next_id_hd }}" readonly>-->
+<!--    </div>-->
+<!--    <div style="grid-column:span 2;">-->
+<!--        <label>Kho</label>-->
+<!--        <select class="input" name="id_kho" required>-->
+<!--            <option value="">&#45;&#45; Chọn kho &#45;&#45;</option>-->
+<!--            {% for k in khos %}-->
+<!--                <option value="{{ k.id_kho }}">{{ k.id_kho }} - {{ k.ten_kho }}</option>-->
+<!--            {% endfor %}-->
+<!--        </select>-->
+<!--    </div>-->
+<!--    <div style="grid-column:span 2;">-->
+<!--      <label>Sản phẩm</label>-->
+<!--      <select class="input" name="id_sp" required>-->
+<!--        <option value="">&#45;&#45; Chọn sản phẩm &#45;&#45;</option>-->
+<!--        {% for sp in sps %}-->
+<!--          <option value="{{ sp.id_san_pham }}">{{ sp.id_san_pham }} - {{ sp.ten_san_pham }}</option>-->
+<!--        {% endfor %}-->
+<!--      </select>-->
+<!--    </div>-->
+
+<!--    <div>-->
+<!--      <label>Số lượng xuất</label>-->
+<!--      <input class="input" name="so_luong" type="number" min="1" placeholder="Nhập số lượng..." required>-->
+<!--    </div>-->
+
+<!--    <div>-->
+<!--      <label>Giá bán</label>-->
+<!--      <input class="input" name="gia_ban" type="number" step="0.01" placeholder="Nhập giá bán..." required>-->
+<!--    </div>-->
+
+<!--    <div style="grid-column:span 2;">-->
+<!--      <label>Ngày xuất</label>-->
+<!--      <div style="display:flex; gap:8px; align-items:center;">-->
+<!--        <input class="input" name="ngay" id="ngayXuat" type="datetime-local" style="flex:1;" required>-->
+<!--        <button type="button" class="btn small ghost" onclick="layThoiGian()">🕒 Lấy thời gian</button>-->
+<!--      </div>-->
+<!--    </div>-->
+
+<!--    <div>-->
+<!--      <label>Nhân viên</label>-->
+<!--      <select class="input" name="id_nv" required>-->
+<!--        <option value="">&#45;&#45; Chọn nhân viên &#45;&#45;</option>-->
+<!--        {% for nv in nvs %}-->
+<!--          {% set ten_nv = ((nv.ho or '') ~ ' ' ~ (nv.ten_dem or '') ~ ' ' ~ (nv.ten or '')) | trim %}-->
+<!--          <option value="{{ nv.id_nhan_vien }}">{{ nv.id_nhan_vien }} - {{ ten_nv or 'NV không tên' }}</option>-->
+<!--        {% endfor %}-->
+<!--      </select>-->
+<!--    </div>-->
+
+<!--    <div>-->
+<!--      <label>Xe vận chuyển</label>-->
+<!--      <select class="input" name="id_xe" required>-->
+<!--        <option value="">&#45;&#45; Chọn xe &#45;&#45;</option>-->
+<!--        {% for xe in xes %}-->
+<!--          {% set tai_xe = ((xe.ho or '') ~ ' ' ~ (xe.ten_dem or '') ~ ' ' ~ (xe.ten or '')) | trim %}-->
+<!--          <option value="{{ xe.id_xe_van_chuyen }}">{{ xe.id_xe_van_chuyen }} - {{ xe.bien_so }} - {{ tai_xe or 'Tài xế' }}</option>-->
+<!--        {% endfor %}-->
+<!--      </select>-->
+<!--    </div>-->
+
+<!--    <div style="grid-column:span 2;">-->
+<!--      <label>Khách hàng</label>-->
+<!--      <select class="input" name="id_kh" required>-->
+<!--        <option value="">&#45;&#45; Chọn khách hàng &#45;&#45;</option>-->
+<!--        {% for kh in khs %}-->
+<!--          {% set ten_kh = ((kh.ho or '') ~ ' ' ~ (kh.ten_dem or '') ~ ' ' ~ (kh.ten or '')) | trim %}-->
+<!--          <option value="{{ kh.id_khach_hang }}">{{ kh.id_khach_hang }} - {{ ten_kh or 'KH không tên' }}</option>-->
+<!--        {% endfor %}-->
+<!--      </select>-->
+<!--    </div>-->
+
+<!--    <div style="grid-column:span 2; text-align:left; margin-top:10px;">-->
+<!--      <button class="btn">✅ Lưu phiếu xuất</button>-->
+<!--    </div>-->
+
+<!--  </form>-->
+
+<!--  <div class="table-wrapper" style="margin-top:24px;">-->
+<!--    <table class="table">-->
+<!--      <thead>-->
+<!--        <tr>-->
+<!--          <th>Hóa đơn</th>-->
+<!--          <th>Sản phẩm</th>-->
+<!--          <th>Số lượng</th>-->
+<!--          <th>Giá bán</th>-->
+<!--          <th>Ngày xuất</th>-->
+<!--          <th>Nhân viên</th>-->
+<!--          <th>Xe VC</th>-->
+<!--          <th>Khách hàng</th>-->
+<!--          <th>Kho </th>-->
+<!--        </tr>-->
+<!--      </thead>-->
+<!--      <tbody>-->
+<!--        {% for r in items %}-->
+<!--        <tr>-->
+<!--          <td>{{ r.id_hoa_don_xuat }}</td>-->
+<!--          <td>{{ r.id_san_pham }}</td>-->
+<!--          <td>{{ r.so_san_pham_xuat }}</td>-->
+<!--          <td>{{ r.gia_ban }}</td>-->
+<!--          <td>{{ r.ngay_xuat }}</td>-->
+<!--          <td>{{ r.id_nhan_vien }}</td>-->
+<!--          <td>{{ r.id_xe_van_chuyen }}</td>-->
+<!--          <td>{{ r.id_khach_hang }}</td>-->
+<!--          <td>{{ r.id_kho }}</td>-->
+<!--        </tr>-->
+<!--        {% endfor %}-->
+<!--      </tbody>-->
+<!--    </table>-->
+<!--  </div>-->
+<!--</div>-->
+
+<!--<script>-->
+<!--  function layThoiGian() {-->
+<!--    const now = new Date();-->
+<!--    const y = now.getFullYear();-->
+<!--    const m = String(now.getMonth() + 1).padStart(2, '0');-->
+<!--    const d = String(now.getDate()).padStart(2, '0');-->
+<!--    const h = String(now.getHours()).padStart(2, '0');-->
+<!--    const min = String(now.getMinutes()).padStart(2, '0');-->
+<!--    document.getElementById("ngayXuat").value = `${y}-${m}-${d}T${h}:${min}`;-->
+<!--  }-->
+<!--</script>-->
+
+<!--{% endblock %}-->

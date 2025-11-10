@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="card">
+  <h2 class="card__title">🚨 Cảnh báo tồn thấp</h2>
+
+  <form method="get" class="searchbar">
+    <label>Kho</label>
+    <select class="input" name="kho" onchange="this.form.submit()" style="max-width:220px;">
+      <option value="ALL" {{ 'selected' if selected_kho=='ALL' else '' }}>Tất cả</option>
+      {% for k in khos %}
+        <option value="{{ k.id_kho }}" {{ 'selected' if selected_kho==k.id_kho else '' }}>
+          {{ k.id_kho }} - {{ k.ten_kho }}
+        </option>
+      {% endfor %}
+    </select>
+    <noscript><button class="btn small">Lọc</button></noscript>
+  </form>
+
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          {% if selected_kho=='ALL' %}<th>Kho</th>{% endif %}
+          <th>Mã SP</th><th>Tên sản phẩm</th><th>Tồn</th><th>Ngưỡng cảnh báo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tk, sp in rows %}
+          <tr>
+            {% if selected_kho=='ALL' %}<td>{{ tk.id_kho }}</td>{% endif %}
+            <td>{{ tk.id_san_pham }}</td>
+            <td>{{ sp.ten_san_pham }}</td>
+            <td>{{ tk.so_luong }}</td>
+            <td>{{ tk.nguong_canh_bao }}</td>
+          </tr>
+        {% endfor %}
+        {% if not rows %}
+          <tr><td colspan="5" style="text-align:center; color:#64748b;">Không có mặt hàng nào dưới ngưỡng.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

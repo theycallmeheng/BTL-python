@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="card">
+  <h2 class="card__title">🔁 Điều chuyển nội bộ</h2>
+
+  <form method="post" class="form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+    <!-- Mã điều chuyển -->
+    <div style="grid-column:span 2;">
+      <label>Mã điều chuyển</label>
+      <input class="input" name="id_dc" value="{{ next_id_dc }}" readonly>
+    </div>
+
+    <!-- Kho nguồn -->
+    <div>
+      <label>Kho nguồn</label>
+      <select class="input" name="kho_src" required>
+        <option value="">-- Chọn kho nguồn --</option>
+        {% for k in khos %}
+          <option value="{{ k.id_kho }}">{{ k.id_kho }} - {{ k.ten_kho }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Kho đích -->
+    <div>
+      <label>Kho đích</label>
+      <select class="input" name="kho_dst" required>
+        <option value="">-- Chọn kho đích --</option>
+        {% for k in khos %}
+          <option value="{{ k.id_kho }}">{{ k.id_kho }} - {{ k.ten_kho }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Ngày điều chuyển + nút lấy thời gian -->
+    <div>
+      <label>Ngày điều chuyển</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input class="input" type="datetime-local" name="ngay" id="ngayDc" required style="flex:1;">
+        <button type="button" class="btn small ghost" onclick="layThoiGian()">
+          🕒 Lấy thời gian
+        </button>
+      </div>
+    </div>
+
+    <!-- Ghi chú -->
+    <div>
+      <label>Ghi chú</label>
+      <input class="input" name="ghi_chu" placeholder="(tùy chọn)">
+    </div>
+
+    <!-- Chi tiết sản phẩm -->
+    <div style="grid-column:span 2;">
+      <h3 style="margin:6px 0 8px 0;">Chi tiết sản phẩm</h3>
+      <div class="table-wrapper">
+        <table class="table" id="linesTable">
+          <thead>
+            <tr>
+              <th style="width:55%;">Sản phẩm</th>
+              <th style="width:25%;">Số lượng</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <select class="input" name="id_sp[]" required>
+                  <option value="">-- Chọn sản phẩm --</option>
+                  {% for sp in sps %}
+                    <option value="{{ sp.id_san_pham }}">{{ sp.id_san_pham }} - {{ sp.ten_san_pham }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td>
+                <input class="input" name="so_luong[]" type="number" min="1" value="1" required>
+              </td>
+              <td>
+                <button class="btn small ghost" type="button" onclick="addRow()">+ Thêm dòng</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Nút submit -->
+    <div style="grid-column:span 2; margin-top:8px;">
+      <button class="btn" type="submit">✅ Ghi nhận điều chuyển</button>
+    </div>
+  </form>
+</div>
+
+{% if recent %}
+<div class="card" style="margin-top:16px;">
+  <h3 class="card__title">📜 Lịch sử điều chuyển gần nhất</h3>
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Mã DC</th>
+          <th>Ngày</th>
+          <th>Kho nguồn</th>
+          <th>Kho đích</th>
+          <th>Mã SP</th>
+          <th>Tên SP</th>
+          <th>Số lượng</th>
+          <th>Ghi chú</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for hdr, ct in recent %}
+        <tr>
+          <td>{{ hdr.id_dieu_chuyen }}</td>
+          <td>{{ hdr.ngay_dc.strftime('%d/%m/%Y %H:%M') if hdr.ngay_dc else '' }}</td>
+          <td>{{ hdr.kho_nguon }}</td>
+          <td>{{ hdr.kho_dich }}</td>
+          <td>{{ ct.id_san_pham }}</td>
+          <td>
+            {% for sp in sps %}
+              {% if sp.id_san_pham == ct.id_san_pham %}
+                {{ sp.ten_san_pham }}
+              {% endif %}
+            {% endfor %}
+          </td>
+          <td>{{ ct.so_luong }}</td>
+          <td>{{ hdr.ghi_chu or '' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<script>
+  // === Nút "Lấy thời gian": chỉ gán khi bấm nút (không auto) ===
+  function layThoiGian() {
+    const now = new Date();
+    const y  = now.getFullYear();
+    const m  = String(now.getMonth() + 1).padStart(2, '0');
+    const d  = String(now.getDate()).padStart(2, '0');
+    const h  = String(now.getHours()).padStart(2, '0');
+    const mi = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('ngayDc').value = `${y}-${m}-${d}T${h}:${mi}`;
+  }
+
+  // === Thêm dòng sản phẩm ===
+  function addRow() {
+    const tbody = document.querySelector('#linesTable tbody');
+    const tr0 = tbody.firstElementChild;
+    const tr = tr0.cloneNode(true);
+
+    tr.querySelector('select[name="id_sp[]"]').value = '';
+    tr.querySelector('input[name="so_luong[]"]').value = 1;
+
+    const actionCell = tr.querySelector('td:last-child');
+    actionCell.innerHTML = '';
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'btn small danger';
+    delBtn.textContent = 'Xóa';
+    delBtn.addEventListener('click', () => tr.remove());
+    actionCell.appendChild(delBtn);
+
+    tbody.appendChild(tr);
+  }
+</script>
+
+{% endblock %}

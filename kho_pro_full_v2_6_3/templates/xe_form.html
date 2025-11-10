@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+  <h2 class="card__title">{{ 'Sửa' if item else 'Thêm' }} xe vận chuyển</h2>
+  <form method="post" class="form-grid">
+    <label>Mã xe</label>
+    <input class="input" name="id_xe_van_chuyen" value="{{ item.id_xe_van_chuyen if item else next_id }}" {{ 'readonly' if item else '' }} required>
+
+    <label>Biển số</label>
+    <input class="input" name="bien_so" value="{{ item.bien_so if item else '' }}" required>
+
+    <label>Họ</label>
+    <input class="input" name="ho" value="{{ item.ho if item else '' }}">
+
+    <label>Tên đệm</label>
+    <input class="input" name="ten_dem" value="{{ item.ten_dem if item else '' }}">
+
+    <label>Tên</label>
+    <input class="input" name="ten" value="{{ item.ten if item else '' }}">
+
+    <label>Số điện thoại tài xế</label>
+    <input class="input" name="so_dien_thoai_tai_xe" value="{{ item.so_dien_thoai_tai_xe if item else '' }}">
+
+    <div class="form-actions">
+      <button class="btn">{{ 'Lưu' if item else 'Tạo' }}</button>
+      <a class="btn ghost" href="{{ url_for('xe_manage') }}">Hủy</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

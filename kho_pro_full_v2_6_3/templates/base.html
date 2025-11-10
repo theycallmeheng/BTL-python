@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>KhoPro</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <a href="{{ url_for('home_page') }}">KHO HÀNG THÔNG MINH</a>
+    </div>
+    <nav class="topnav">
+      <a class="btn small" href="{{ url_for('home_page') }}">Trang chủ</a>
+
+      {% if current_user.is_authenticated %}
+        <span class="chip">
+          Xin chào, {{ current_user.full_name or current_user.username }}
+          {% if IS_STAFF and ASSIGNED_KHO %}
+            · Kho: <strong>{{ ASSIGNED_KHO }}</strong>
+          {% endif %}
+          {% if IS_ADMIN %}
+            · <strong>Admin</strong>
+          {% endif %}
+        </span>
+        <a class="btn small ghost" href="{{ url_for('change_password') }}">Đổi mật khẩu</a>
+        <a class="btn small danger" href="{{ url_for('logout') }}">Đăng xuất</a>
+      {% else %}
+        <a class="btn small" href="{{ url_for('login') }}">Đăng nhập</a>
+      {% endif %}
+
+      <button id="themeToggle" class="theme-toggle" title="Đổi giao diện">🌓</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap main">
+  <aside class="sidebar card">
+    <div class="nav__title">Danh mục</div>
+
+    <!-- Luôn hiển thị cho cả admin & staff -->
+    <a class="nav__item" href="{{ url_for('products') }}">Sản phẩm</a>
+    <a class="nav__item" href="{{ url_for('stock') }}">Tồn kho</a>
+    <a class="nav__item" href="{{ url_for('nhap_kho') }}">Nhập kho</a>
+    <a class="nav__item" href="{{ url_for('xuat_kho') }}">Xuất kho</a>
+
+    <!-- Chỉ hiển thị cho admin -->
+    {% if IS_ADMIN %}
+      <a class="nav__item" href="{{ url_for('canh_bao') }}">Cảnh báo</a>
+      <a class="nav__item" href="{{ url_for('dieu_chuyen') }}">Điều chuyển</a>
+      <a class="nav__item" href="{{ url_for('doanh_thu_view') }}">Doanh thu</a>
+      <a class="nav__item" href="{{ url_for('ncc_manage') }}">Nhà cung cấp </a>
+      <a class="nav__item" href="{{ url_for('kh_manage') }}">Khách hàng </a>
+      <a class="nav__item" href="{{ url_for('xe_manage') }}">Xe vận chuyển </a>
+    {% endif %}
+  </aside>
+
+  <section class="content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for c, m in messages %}
+          <div class="flash {{ c }}">{{ m }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </section>
+</main>
+
+<script>
+(function(){
+  const root = document.documentElement;
+  const btn = document.getElementById('themeToggle');
+  const LS_KEY = 'kho.theme';
+
+  function prefersDark(){ return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches; }
+  function setBtn(theme){ if(btn) btn.textContent = theme === 'dark' ? '🌙' : '☀️'; }
+  function applyInitial() {
+    const saved = localStorage.getItem(LS_KEY);
+    if (saved === 'light' || saved === 'dark') { root.setAttribute('data-theme', saved); setBtn(saved); }
+    else { root.removeAttribute('data-theme'); setBtn(prefersDark() ? 'dark' : 'light'); }
+  }
+
+  if (btn){
+    btn.addEventListener('click', function(){
+      let next; const cur = root.getAttribute('data-theme');
+      if (cur) { next = (cur === 'dark') ? 'light' : 'dark'; }
+      else { next = prefersDark() ? 'light' : 'dark'; }
+      root.setAttribute('data-theme', next);
+      localStorage.setItem(LS_KEY, next);
+      setBtn(next);
+    });
+  }
+  if (window.matchMedia){
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      if (!localStorage.getItem(LS_KEY)) { setBtn(e.matches ? 'dark' : 'light'); }
+    });
+  }
+  applyInitial();
+})();
+</script>
+</body>
+</html>

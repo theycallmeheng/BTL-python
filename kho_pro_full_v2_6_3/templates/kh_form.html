@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+  <h2 class="card__title">{{ 'Sửa' if item else 'Thêm' }} khách hàng</h2>
+  <form method="post" class="form-grid">
+    <label>Mã khách hàng</label>
+    <input class="input" name="id_khach_hang" value="{{ item.id_khach_hang if item else next_id }}" {{ 'readonly' if item else '' }} required>
+
+    <label>Họ</label>
+    <input class="input" name="ho" value="{{ item.ho if item else '' }}">
+
+    <label>Tên đệm</label>
+    <input class="input" name="ten_dem" value="{{ item.ten_dem if item else '' }}">
+
+    <label>Tên</label>
+    <input class="input" name="ten" value="{{ item.ten if item else '' }}">
+
+    <label>Số điện thoại</label>
+    <input class="input" name="so_dien_thoai" value="{{ item.so_dien_thoai if item else '' }}">
+
+    <label>Địa điểm</label>
+    <select class="input" name="dia_diem">
+      <option value="">-- Không chọn --</option>
+      {% for d in dds %}
+        <option value="{{ d.id_dia_diem }}" {{ 'selected' if item and item.id_dia_chi==d.id_dia_diem else '' }}>
+          {{ d.id_dia_diem }} - {{ d.ten_dia_diem }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <div class="form-actions">
+      <button class="btn">{{ 'Lưu' if item else 'Tạo' }}</button>
+      <a class="btn ghost" href="{{ url_for('kh_manage') }}">Hủy</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

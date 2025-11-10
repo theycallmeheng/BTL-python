@@ -1,0 +1,11 @@
+
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+  <h2 class="card__title">Đơn hàng</h2>
+  <div class="table-wrapper"><table class="table">
+    <thead><tr><th>ID đơn</th><th>Số dòng</th><th>Tổng tiền</th></tr></thead>
+    <tbody>{% for id_hd, cnt, sumt in rows %}<tr><td>{{ id_hd }}</td><td>{{ cnt }}</td><td>{{ sumt }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}
